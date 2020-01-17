@@ -1,0 +1,74 @@
+		O R A C L E    D M L   L O C K    M E C H A N I S M
+----------------------------------------------------------------------------------
+		SQL> CREATE TABLE EMP1
+		     (
+			ID     NUMBER,
+			NAME   VARCHAR2(10),
+			SALARY NUMBER
+		     );
+		SQL> INSERT INTO EMP1 VALUES(1,'KAMAL',12000);
+		SQL> INSERT INTO EMP1 VALUES(2,'JAMAL',17000);
+		SQL> DESC USER_SEGMENTS;
+----------------------------------------------------------------------------------
+TEANSECTION: 1                                TRANSECTION: 2
+---------------				      -----------------
+SQL> UPDATE EMP1				UPDATE EMP1
+     SET SALARY=14000				SET SALARY=15000
+     WHERE ID = 1;                              WHERE ID = 1;
+
+     1 row updated.                             - locked
+SQL> COMMIT;                                    1 row updated.
+     Commit complete.
+
+SQL> UPDATE EMP1				UPDATE EMP1
+     SET SALARY=14000				SET SALARY=16000
+     WHERE ID = 1;                              WHERE ID = 1;
+SQL>                                            - locked
+
+----------------------------------------------------------------------------------
+			F I N D I N G   B L O C K   S E S S I O N
+----------------------------------------------------------------------------------
+		SQL> SHOW PARAMETER TEMP_UNDO_ENABLED;
+
+		SQL> DESC V$SESSION;
+
+		SQL> SELECT SID, SERIAL#, USERNAME, TERMINAL, PROGRAM, PORT
+     	     	     FROM   V$SESSION
+     	             WHERE  USERNAME IS NOT NULL;
+
+		SQL> SELECT BLOCKING_SESSION
+     		     FROM   V$SESSION;
+
+		SQL> SELECT BLOCKING_SESSION
+                     FROM   V$SESSION
+                     WHERE  BLOCKING_SESSION IS NOT NULL;
+
+		SQL> SELECT SID, SERIAL#, USERNAME
+                     FROM   V$SESSION
+                     WHERE  SID IN ( SELECT BLOCKING_SESSION
+                                     FROM   V$SESSION );
+
+       			SID    SERIAL# USERNAME
+			---------- ---------- ------------------------------
+       			131      22531 HR
+
+		
+----------------------------------------------------------------------------------
+			K I L L    B L O C K   S E S S I O N
+----------------------------------------------------------------------------------
+
+		SQL> ALTER SYSTEM KILL SESSION '131,22531' IMMEDIATE;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
